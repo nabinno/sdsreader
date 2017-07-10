@@ -4,7 +4,7 @@ from pmuploader import PmDataUploader
 from sdserror import SdsError 
 from sdssensor import SdsSensor 
 
-LOGLEVEL = logging.INFO
+LOGLEVEL = logging.WARN
 PORT = '/dev/serial0'
 # Time delta between measurements, in seconds:
 SAMPLING_PERIOD = 15 

@@ -6,29 +6,47 @@ class PmDataUploader:
         self.faildate = 0
         self.url = url
         self.writecount = 0
+        self.session = requests.Session()
+        self.csrftoken = self.getCsrfToken()
 
     def file_get_contents(self, filename):
-        records = []
+        tuples = []
         with open(filename, 'rb') as file:
             while True:
                 try:
                     record = pickle.load(file)
-                    records.append(record)
+                    tuples.extend(list(record.items()))
                 except EOFError:
                     break            
-            return records
+            return tuples
                 
     def file_put_contents(self, filename, data):
         with open(filename, 'ab') as file:
             #file.write(str(data['time']) + "; %.1f; %.1f\n" % (data['pm25'], data['pm10']))
             pickle.dump(data, file)
+
+    def getCsrfToken(self):
+        response = self.session.get(self.url)
+        logging.debug("url = %s", response.url)
+        logging.debug("Server response: %s", response.text) 
+        logging.debug("cookie jar = %s", response.cookies)
+        cookies = dict(response.cookies)
+        logging.debug("cookies = %s", cookies)
+        return cookies['csrftoken']      
             
-    def httpGet(self, datarecord):
-        # sending get request and saving the response as response object
-        response = requests.get(url = self.url, params = datarecord)
+    def httpPost(self, tuples):
+        logging.debug("data tuples: %s", tuples)
+        # Adding csrf token to list of tuples, otherwise it's not
+        # possible to post data record 
+        tuples.append(('csrfmiddlewaretoken', self.csrftoken))
+        logging.debug("data tuples: %s", tuples)
+
+        response = self.session.post(url = self.url, data = tuples)
+        logging.debug("cookie jar = %s", response.cookies)
+        
         logging.info("Server response: %s", response.text)        
         
-    def sendMeasurement(self, datarecord):
+    def sendMeasurement(self, measureDict):
         if self.writecount == 20:
             logging.debug("Persistent storage file too big. Will create new one.")
             self.faildate = 0
@@ -39,23 +57,24 @@ class PmDataUploader:
                                 "pending." + self.faildate + ".pickle")
         logging.debug("Persistent storage file is: %s", filePath)
 
+        tuples = list(measureDict.items())
+         
         try:
-            self.httpGet(datarecord)
+            self.httpPost(tuples)
             self.uploadQueue()
         except requests.exceptions.ConnectionError as e:
             logging.error("Connection to remote server failed: %s %s", type(e), e.args)
-            self.file_put_contents(filePath, datarecord)
+            self.file_put_contents(filePath, measureDict)
             self.writecount += 1
-            logging.info("Data saved in %s", filePath)
+            logging.info("Data saved in %s", filePath)            
 
     def uploadQueue(self):
         path = os.path.dirname(os.path.abspath(__file__))
         for filePath in glob.glob(path+'/*.pickle'):
             logging.info("Uploading data file %s...", filePath)
-            records = self.file_get_contents(filePath)
+            tuples = self.file_get_contents(filePath)
             try:
-                for record in records:
-                    self.httpGet(record)
+                self.httpPost(tuples)
                 os.remove(filePath)
                 logging.info("File %s uploaded", filePath)                
             except requests.exceptions.ConnectionError as e:
