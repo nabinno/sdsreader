@@ -16,7 +16,7 @@ class SdsSensor:
             id += hhex
         return id
 
-    def getValues(self):
+    def getMeasurement(self):
         packet = self.readPacket()
             
         if (not self.isIdOk(packet)):

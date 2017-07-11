@@ -13,9 +13,9 @@ URL = "http://dusty.pythonanywhere.com/pm/save/"
 def loop():
     while True:
         try:
-            values = pmSensor.getValues()
-            values['time'] = arrow.now()
-            uploader.sendMeasurement(values)
+            measurement = pmSensor.getMeasurement()
+            measurement['time'] = arrow.now()
+            uploader.sendMeasurement(measurement)
             time.sleep(pmSensor.samplingPeriod)
         except SdsError as e:
             logging.error("SDS error: %s %s", type(e), e.args)

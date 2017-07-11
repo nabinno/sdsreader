@@ -14,16 +14,15 @@ class PmDataUploader:
         with open(filename, 'rb') as file:
             while True:
                 try:
-                    record = pickle.load(file)
-                    tuples.extend(list(record.items()))
+                    measurement = pickle.load(file)
+                    tuples.extend(list(measurement.items()))
                 except EOFError:
                     break            
             return tuples
                 
-    def file_put_contents(self, filename, data):
+    def file_put_contents(self, filename, measurement):
         with open(filename, 'ab') as file:
-            #file.write(str(data['time']) + "; %.1f; %.1f\n" % (data['pm25'], data['pm10']))
-            pickle.dump(data, file)
+            pickle.dump(measurement, file)
 
     def getCsrfToken(self):
         response = self.session.get(self.url)
@@ -46,7 +45,7 @@ class PmDataUploader:
         
         logging.info("Server response: %s", response.text)        
         
-    def sendMeasurement(self, measureDict):
+    def sendMeasurement(self, measurement):
         if self.writecount == 20:
             logging.debug("Persistent storage file too big. Will create new one.")
             self.faildate = 0
@@ -57,14 +56,15 @@ class PmDataUploader:
                                 "pending." + self.faildate + ".pickle")
         logging.debug("Persistent storage file is: %s", filePath)
 
-        tuples = list(measureDict.items())
+        # Transform the measurement dictionary in a list of tuples
+        tuples = list(measurement.items())
          
         try:
             self.httpPost(tuples)
             self.uploadQueue()
         except requests.exceptions.ConnectionError as e:
             logging.error("Connection to remote server failed: %s %s", type(e), e.args)
-            self.file_put_contents(filePath, measureDict)
+            self.file_put_contents(filePath, measurement)
             self.writecount += 1
             logging.info("Data saved in %s", filePath)            
 
