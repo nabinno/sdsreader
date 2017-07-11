@@ -61,6 +61,8 @@ class SdsSensor:
 # packet format (from www.inovafitness.com):
 # AA C0 PM25_Low PM25_High PM10_Low PM10_High ID_1 ID_2 CRC AB
 # 0  1  2        3         4        5         6    7    8   9
+        if len(packet) != 10:
+            raise SdsNoPacketError("Could not read packet. Is SDS sensor connected?")
         if (packet[0] != 0xaa or packet[1] != 0xc0 or packet[9] != 0xab):
             raise SdsPacketError("Packet has wrong header or trailer",
                                  packet[0], packet[1], packet[9])

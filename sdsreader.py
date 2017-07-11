@@ -31,6 +31,8 @@ if __name__ == "__main__":
         print("Sampling period:", pmSensor.samplingPeriod, "s")
         uploader = PmDataUploader(URL)
         loop()
+    except SdsError as e:
+        logging.critical("%s %s", type(e), e.args)
     except Exception as e:
         logging.error("%s %s", type(e), e.args)
         raise

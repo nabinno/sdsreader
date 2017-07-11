@@ -26,6 +26,15 @@ class SdsIdError(SdsError):
         self.message = message
         self.idFromPacket = idFromPacket
 
+class SdsNoPacketError(SdsError):
+    """Exception raised for errors in data packet header or trailer.
+
+    Attributes:
+        message -- explanation of the error
+    """
+    def __init__(self, message):
+        self.message = message        
+    
 class SdsPacketError(SdsError):
     """Exception raised for errors in data packet header or trailer.
 
