@@ -1,10 +1,10 @@
 import arrow, logging, time
 
 from pmuploader import PmDataUploader 
-from sdserror import SdsError 
+from sdserror import SdsError, SdsNoPacketError
 from sdssensor import SdsSensor 
 
-LOGLEVEL = logging.WARN
+LOGLEVEL = logging.INFO
 PORT = '/dev/serial0'
 # Time delta between measurements, in seconds:
 SAMPLING_PERIOD = 15 
@@ -31,8 +31,8 @@ if __name__ == "__main__":
         print("Sampling period:", pmSensor.samplingPeriod, "s")
         uploader = PmDataUploader(URL)
         loop()
-    except SdsError as e:
-        logging.critical("%s %s", type(e), e.args)
+    except SdsNoPacketError as e:
+        print(e.message)
     except Exception as e:
         logging.error("%s %s", type(e), e.args)
         raise
