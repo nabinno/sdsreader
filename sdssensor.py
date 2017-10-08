@@ -1,6 +1,12 @@
 import logging, serial
 from sdserror import *
 
+# SDS sensor to RasPi connection:
+# RED wire <-> pin 4
+# BLACK wire <-> pin 6
+# YELLOW wire <-> pin 8
+# BLUE wire <-> pin 10
+
 class SdsSensor:
     def __init__(self, port = "/dev/serial0", samplingPeriod = 15):
         self.serial = serial.Serial(port = port, baudrate = 9600)

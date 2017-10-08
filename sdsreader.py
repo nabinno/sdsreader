@@ -33,6 +33,11 @@ if __name__ == "__main__":
         loop()
     except SdsNoPacketError as e:
         print(e.message)
+        print("---> SDS to RasPi connection:", "\n",
+              "    - RED wire <-> pin 4", "\n",
+              "    - BLACK wire <-> pin 6", "\n",
+              "    - YELLOW wire <-> pin 8", "\n",
+              "    - BLUE wire <-> pin 10")
     except Exception as e:
         logging.error("%s %s", type(e), e.args)
         raise
